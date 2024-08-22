@@ -2,63 +2,11 @@ import streamlit as st
 import pandas as pd
 import io
 import matplotlib.pyplot as plt
-import matplotlib
 
 # Custom CSS for full-page borders and top bar
 st.markdown("""
     <style>
-    /* Apply a border effect with repeating money symbols */
-    body {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
-    .money-border-left,
-    .money-border-right {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        width: 60px; /* Width of the border */
-        z-index: 0;
-        background-repeat: repeat; /* Repeat the background image */
-        background-size: 100% auto; /* Adjust to fit the border */
-        background-color: #4CAF50; /* Background color to match the symbols */
-    }
-    .money-border-left {
-        left: 0;
-        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHZpZXdCb3g9IjAgMCAxIDEiPjxnIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjY29sb3I9IiMwMDAiIHN0cm9rZS1kaWxsaW5lPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGlzdC1saW5lPSJyb3VuZCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTAgMUwgMTAgMEwgMCAwIiBzdHJva2U9IiMwMDAiLz48L2c+PC9zdmc+'); /* Base64-encoded SVG of the dollar sign */
-    }
-    .money-border-right {
-        right: 0;
-        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHZpZXdCb3g9IjAgMCAxIDEiPjxnIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjY29sb3I9IiMwMDAiIHN0cm9rZS1kaWxsaW5lPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGlzdC1saW5lPSJyb3VuZCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTAgMUwgMTAgMEwgMCAwIiBzdHJva2U9IiMwMDAiLz48L2c+PC9zdmc+'); /* Base64-encoded SVG of the dollar sign */
-        background-position: right; /* Align the image to the right */
-    }
-    .money-border-top {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 60px; /* Height of the top bar */
-        background-color: #333; /* Background color for the top bar */
-        color: #fff; /* Text color */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1; /* Ensure it appears above the money borders */
-    }
-    .content {
-        position: relative;
-        z-index: 2;
-        padding: 80px 20px 20px; /* Adjust padding to accommodate top bar */
-    }
-    .title {
-        text-align: center;
-        font-size: 36px;
-        font-weight: bold;
-        color: #4CAF50;
-        margin-bottom: 20px;
-    }
+    /* Your custom CSS here */
     </style>
     <div class="money-border-left"></div>
     <div class="money-border-right"></div>
@@ -82,25 +30,26 @@ range4 = st.number_input("Fourth Range", min_value=850, max_value=850)
 percent4 = st.number_input("Percent Increase for Fourth Range", min_value=percent3 + 1, max_value=100)
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
-
 if uploaded_file is not None:
     try:
         # Read the uploaded CSV file into a DataFrame
         dataframe = pd.read_csv(uploaded_file)
 
-        # Display the DataFrame
+        # Display the DataFrame immediately after upload
         st.write("Uploaded DataFrame:")
         st.write(dataframe)
 
-        # Check if required columns exist
+        # Check if the required columns exist
         if 'risk_score' not in dataframe.columns:
             st.error("The uploaded file does not contain a 'risk_score' column.")
         elif 'credit_line' not in dataframe.columns:
             st.error("The uploaded file does not contain a 'credit_line' column.")
         else:
+            # Add a button to apply changes
             apply_changes = st.button("Apply Changes")
 
             if apply_changes:
+                # Define the function to calculate the linear percent increase based on risk_score
                 def calculate_linear_increase(risk_score):
                     if risk_score <= range1:
                         return percent1
@@ -113,6 +62,7 @@ if uploaded_file is not None:
                     else:
                         return percent4
 
+                # Calculate the percentage increase and new credit value
                 dataframe['percent_increase'] = dataframe['risk_score'].apply(calculate_linear_increase)
                 dataframe['new_credit_value'] = dataframe.apply(
                     lambda row: row['credit_line'] * (1 + row['percent_increase'] / 100),
@@ -120,6 +70,7 @@ if uploaded_file is not None:
                 )
 
                 x = 0
+                # Calculate the total money spent when the new credit value is increased
                 for index, row in dataframe.iterrows():
                     old = row["credit_line"]
                     new = row["new_credit_value"]
@@ -127,6 +78,7 @@ if uploaded_file is not None:
                 st.write(f"Total Money Spent: {x}")
 
                 y = 0
+                # Calculate the total number of credit lines increased
                 for index, row in dataframe.iterrows():
                     percentff = row["percent_increase"]
                     if percentff != 0:
@@ -134,6 +86,7 @@ if uploaded_file is not None:
                 st.write("Credit Lines Increased: " + str(y))
 
                 z = 0
+                # Calculate the total credit line amount
                 for index, row in dataframe.iterrows():
                     clff = row["credit_line"]
                     z += clff
@@ -142,15 +95,14 @@ if uploaded_file is not None:
                 st.write("Total Spending Percent Increase: +" + str(w) + "%")
 
                 # Matplotlib Plot with only dots (no connecting lines)
-                fig, ax = plt.subplots(figsize=(10, 6))  # Adjust size if needed
+                fig, ax = plt.subplots(figsize=(10, 6))  # Create a new figure with size (10, 6)
                 x = dataframe["risk_score"]
                 y = dataframe["percent_increase"]
 
-                ax.plot(x, y, 'o', color='blue', label='Dataset')  # 'o' indicates markers only, no lines
+                ax.plot(x, y, 'o', color='red')  # 'o' indicates markers only, no lines
                 ax.set_title('Percentage Increase vs Risk Score')
                 ax.set_xlabel('Risk Score')
                 ax.set_ylabel('Percentage Increase')
-                ax.legend()
                 ax.grid(True)
 
                 st.pyplot(fig)  # Display the plot
