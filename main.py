@@ -1,12 +1,62 @@
 import streamlit as st
 import pandas as pd
 import io
-import matplotlib.pyplot as plt
 
 # Custom CSS for full-page borders and top bar
 st.markdown("""
     <style>
-    /* Your custom CSS here */
+    /* Apply a border effect with repeating money symbols */
+    body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    .money-border-left,
+    .money-border-right {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 60px; /* Width of the border */
+        z-index: 0;
+        background-repeat: repeat; /* Repeat the background image */
+        background-size: 100% auto; /* Adjust to fit the border */
+        background-color: #4CAF50; /* Background color to match the symbols */
+    }
+    .money-border-left {
+        left: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHZpZXdCb3g9IjAgMCAxIDEiPjxnIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjY29sb3I9IiMwMDAiIHN0cm9rZS1kaWxsaW5lPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGlzdC1saW5lPSJyb3VuZCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTAgMUwgMTAgMEwgMCAwIiBzdHJva2U9IiMwMDAiLz48L2c+PC9zdmc+'); /* Base64-encoded SVG of the dollar sign */
+    }
+    .money-border-right {
+        right: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxIiBoZWlnaHQ9IjEiIHZpZXdCb3g9IjAgMCAxIDEiPjxnIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjY29sb3I9IiMwMDAiIHN0cm9rZS1kaWxsaW5lPSJyb3VuZCIgc3Ryb2tlLW1pdGVybGlzdC1saW5lPSJyb3VuZCIgZmlsbD0ibm9uZSI+PHBhdGggZD0iTTAgMUwgMTAgMEwgMCAwIiBzdHJva2U9IiMwMDAiLz48L2c+PC9zdmc+'); /* Base64-encoded SVG of the dollar sign */
+        background-position: right; /* Align the image to the right */
+    }
+    .money-border-top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px; /* Height of the top bar */
+        background-color: #333; /* Background color for the top bar */
+        color: #fff; /* Text color */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1; /* Ensure it appears above the money borders */
+    }
+    .content {
+        position: relative;
+        z-index: 2;
+        padding: 80px 20px 20px; /* Adjust padding to accommodate top bar */
+    }
+    .title {
+        text-align: center;
+        font-size: 36px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin-bottom: 20px;
+    }
     </style>
     <div class="money-border-left"></div>
     <div class="money-border-right"></div>
@@ -54,13 +104,16 @@ if uploaded_file is not None:
                     if risk_score <= range1:
                         return percent1
                     elif risk_score <= range2:
+                        # Linear interpolation between range1 and range2
                         return percent1 + ((percent2 - percent1) / (range2 - range1)) * (risk_score - range1)
                     elif risk_score <= range3:
+                        # Linear interpolation between range2 and range3
                         return percent2 + ((percent3 - percent2) / (range3 - range2)) * (risk_score - range2)
                     elif risk_score <= range4:
+                        # Linear interpolation between range3 and range4
                         return percent3 + ((percent4 - percent3) / (range4 - range3)) * (risk_score - range3)
                     else:
-                        return percent4
+                        return percent4  # If risk_score is exactly range4 or greater
 
                 # Calculate the percentage increase and new credit value
                 dataframe['percent_increase'] = dataframe['risk_score'].apply(calculate_linear_increase)
@@ -68,6 +121,10 @@ if uploaded_file is not None:
                     lambda row: row['credit_line'] * (1 + row['percent_increase'] / 100),
                     axis=1
                 )
+
+                # Display the updated DataFrame
+                st.write("Updated DataFrame with Applied Changes:")
+                st.write(dataframe)
 
                 x = 0
                 # Calculate the total money spent when the new credit value is increased
@@ -78,26 +135,22 @@ if uploaded_file is not None:
                 st.write(f"Total Money Spent: {x}")
 
                 y = 0
-                # Calculate the total number of credit lines increased
+                # Calculate the total money spent when the new credit value is increased
                 for index, row in dataframe.iterrows():
                     percentff = row["percent_increase"]
                     if percentff != 0:
-                        y += 1
+                        y = y + 1
                 st.write("Credit Lines Increased: " + str(y))
 
                 z = 0
-                # Calculate the total credit line amount
+                # Calculate the total percent increase when the new credit value is increased
                 for index, row in dataframe.iterrows():
                     clff = row["credit_line"]
-                    z += clff
-                totalamm = z + x
+                    z = z + clff
+                totalamm = z + x 
                 w = ((totalamm - z) / z) * 100
-                st.write("Total Spending Percent Increase: +" + str(w) + "%")
+                st.write("Total Spending Percents Increase: +" + str(w) + "%")
 
-
-                # Display the updated DataFrame
-                st.write("Updated DataFrame with Applied Changes:")
-                st.write(dataframe)
 
                 # Convert DataFrame to CSV and provide a download button
                 def convert_df_to_csv(df):
