@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 import matplotlib.pyplot as plt
+import matplotlib
 
 # Custom CSS for full-page borders and top bar
 st.markdown("""
