@@ -94,18 +94,6 @@ if uploaded_file is not None:
                 w = ((totalamm - z) / z) * 100
                 st.write("Total Spending Percent Increase: +" + str(w) + "%")
 
-                # Matplotlib Plot with only dots (no connecting lines)
-                fig, ax = plt.subplots(figsize=(10, 6))  # Create a new figure with size (10, 6)
-                x = dataframe["risk_score"]
-                y = dataframe["percent_increase"]
-
-                ax.plot(x, y, 'o', color='red')  # 'o' indicates markers only, no lines
-                ax.set_title('Percentage Increase vs Risk Score')
-                ax.set_xlabel('Risk Score')
-                ax.set_ylabel('Percentage Increase')
-                ax.grid(True)
-
-                st.pyplot(fig)  # Display the plot
 
                 # Display the updated DataFrame
                 st.write("Updated DataFrame with Applied Changes:")
